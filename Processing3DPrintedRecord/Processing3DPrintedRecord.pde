@@ -30,17 +30,9 @@ float samplingRate = 44100;//(44.1khz audio initially)
 float rpm = 33.3;//rev per min
 float rateDivisor = 4;//how much we are downsampling by
 
-//groove parameters
-float amplitude = 24;//amplitude of signal (in steps)
-float bevel = 0.5;//bevelled groove edge
-float grooveWidth = 2;//in pixels
-float depth = 6;//measured in steps, depth of tops of wave in groove from uppermost surface of record
+float amplitude, bevel, grooveWidth, depth, dpi, micronsPerLayer, diameter, innerRad, outerRad;
 
-//printer parameters
-float dpi = 600;//objet printer prints at 600 dpi
-float micronsPerLayer = 16;//microns per vertical print layer
-
-float diameter, innerRad, outerRad;
+String grooveAndPrinter = "amandaghassaei";
 
 //global geometry storage
 UVertexList recordPerimeterUpper,recordPerimeterLower,recordHoleUpper,recordHoleLower;//storage for perimeter and center hole of record
@@ -54,6 +46,31 @@ float incrNum = TWO_PI/thetaIter;//calculcate angular incrementation amount
 int samplenum = 0;//which audio sample we are currently on
 
 void setup(){
+  if (grooveAndPrinter == "bq") { // name should change to better identify printer
+    //groove parameters
+    amplitude = 2;//amplitude of signal (in steps)
+    bevel = 0.5;//bevelled groove edge
+    grooveWidth = 2;//in pixels
+    depth = 6;//measured in steps, depth of tops of wave in groove from uppermost surface of record
+
+    //printer parameters
+    dpi = 254;
+    micronsPerLayer = 100; //microns per vertical print layer
+  } else {
+    if (grooveAndPrinter != "amandaghassaei") { // name should change to identify printer
+      println("Groove and printer setting unknown, using 'amandaghassaei' instead.");
+    }
+    //groove parameters
+    amplitude = 24;//amplitude of signal (in steps)
+    bevel = 0.5;//bevelled groove edge
+    grooveWidth = 2;//in pixels
+    depth = 6;//measured in steps, depth of tops of wave in groove from uppermost surface of record
+
+    //printer parameters
+    dpi = 600;//objet printer prints at 600 dpi
+    micronsPerLayer = 16;//microns per vertical print layer
+  }
+
   if (recordSize == 5) {
     diameter = 5;
     innerRad = 1.9375;
