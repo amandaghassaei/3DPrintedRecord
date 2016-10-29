@@ -19,12 +19,11 @@ import ec.util.*;
 String filename = "finalEdit1Min.txt";
 
 //record parameters
-float diameter = 11.8;//diameter of record in inches
-float innerHole = 0.286;//diameter of center hole in inches
-float innerRad = 2.35;//radius of innermost groove in inches
-float outerRad = 5.75;//radius of outermost groove in inches
 float recordHeight = 0.06;//height of top of record (inches)
 int recordBottom = 0;//height of bottom of record
+float innerHole = 0.286;//diameter of center hole in inches
+int recordSize = 12;	// 12 inches? 7 inches? 5 inches?
+			// This isn't the "real size", but the type of record you want to do
 
 //audio parameters
 float samplingRate = 44100;//(44.1khz audio initially)
@@ -32,14 +31,16 @@ float rpm = 33.3;//rev per min
 float rateDivisor = 4;//how much we are downsampling by
 
 //groove parameters
-float amplitude = 24;//amplitude of signal (in 16 micron steps)
+float amplitude = 24;//amplitude of signal (in steps)
 float bevel = 0.5;//bevelled groove edge
-float grooveWidth = 2;//in 600dpi pixels
-float depth = 6;//measured in 16 microns steps, depth of tops of wave in groove from uppermost surface of record
+float grooveWidth = 2;//in pixels
+float depth = 6;//measured in steps, depth of tops of wave in groove from uppermost surface of record
 
 //printer parameters
 float dpi = 600;//objet printer prints at 600 dpi
 float micronsPerLayer = 16;//microns per vertical print layer
+
+float diameter, innerRad, outerRad;
 
 //global geometry storage
 UVertexList recordPerimeterUpper,recordPerimeterLower,recordHoleUpper,recordHoleLower;//storage for perimeter and center hole of record
@@ -53,7 +54,20 @@ float incrNum = TWO_PI/thetaIter;//calculcate angular incrementation amount
 int samplenum = 0;//which audio sample we are currently on
 
 void setup(){
-  
+  if (recordSize == 5) {
+    diameter = 5;
+    innerRad = 1.9375;
+    outerRad = 2.3125;
+  } else {
+    if (recordSize != 12) {
+      println("We don't know the parameters for records of " +
+        recordSize + "\" size, so generating a default 12\" record instead.");
+    }
+    diameter = 11.8;//diameter of record in inches
+    innerRad = 2.35;//radius of innermost groove in inches
+    outerRad = 5.75;//radius of outermost groove in inches
+  }
+
   scaleVariables();//convert units, initialize etc
   setUpRecordShape();//draw basic shape of record
   drawGrooves(processAudioData());//draw in grooves
@@ -96,6 +110,9 @@ void scaleVariables(){
   float micronsPerInch = 25400;//scalingfactor
   amplitude = amplitude*micronsPerLayer/micronsPerInch;
   depth = depth*micronsPerLayer/micronsPerInch;
+  if ((recordHeight - depth) <= recordBottom) {
+    println("Error: your printer doesn't allow such a huge depth!");
+  }
   grooveWidth /= dpi;
 }
 
@@ -157,7 +174,7 @@ void drawGrooves(float[] audioData){
   UVertexList stop1 = beginStartCap(radius, audioData[0]);
   
   //then spiral groove
-  while (rateDivisor*samplenum<(audioData.length-rateDivisor*thetaIter+1)){//while we still have audio to write and we have not reached the innermost groove  //radius>innerRad &&
+  while (rateDivisor*samplenum<(audioData.length-rateDivisor*thetaIter+1) && (radius>innerRad)){//while we still have audio to write and we have not reached the innermost groove  //radius>innerRad &&
     
     clearGrooveStorage();
     for(float theta=0;theta<TWO_PI;theta+=incrNum){//for theta between 0 and 2pi
@@ -176,6 +193,10 @@ void drawGrooves(float[] audioData){
     print(" of ");
     print(totalgroovenum);
     println(" grooves drawn");
+  }
+
+  if (radius < innerRad) {
+    println("We stopped before the end of the track, since we reached the inner radius");
   }
   
   //the locked groove is made out of two intersecting grooves, one that spirals in, and one that creates a perfect circle.
