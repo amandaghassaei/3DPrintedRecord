@@ -46,7 +46,7 @@ float incrNum = TWO_PI/thetaIter;//calculcate angular incrementation amount
 int samplenum = 0;//which audio sample we are currently on
 
 void setup(){
-  if (grooveAndPrinter == "bq") { // name should change to better identify printer
+  if (grooveAndPrinter == "CoLiDo2") {
     //groove parameters
     amplitude = 2;//amplitude of signal (in steps)
     bevel = 0.5;//bevelled groove edge
